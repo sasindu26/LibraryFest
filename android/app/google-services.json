@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "37140900577",
+    "project_id": "library-management-c5a54",
+    "storage_bucket": "library-management-c5a54.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37140900577:android:62a82cbf681c1dd0c3a5a0",
+        "android_client_info": {
+          "package_name": "com.sasindu.libraryfest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIhq_QxNr73uD3Y1R-wvfZTduOKqK24eI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
