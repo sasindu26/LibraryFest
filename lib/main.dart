@@ -53,44 +53,136 @@ class MyApp extends StatelessWidget {
         title: 'Library Management',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
+          // iOS-inspired color scheme
           colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
+            seedColor: const Color(0xFF007AFF), // iOS Blue
             brightness: Brightness.light,
+            primary: const Color(0xFF007AFF), // iOS Blue
+            secondary: const Color(0xFF5856D6), // iOS Purple
+            tertiary: const Color(0xFFFF9500), // iOS Orange
+            surface: const Color(0xFFF2F2F7), // iOS Light Gray
+            background: const Color(0xFFFFFFFF),
           ),
+          scaffoldBackgroundColor: const Color(0xFFF2F2F7), // iOS background
           useMaterial3: true,
-          textTheme: GoogleFonts.poppinsTextTheme(),
-          appBarTheme: const AppBarTheme(
-            centerTitle: false,
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            foregroundColor: Colors.black87,
-          ),
-          cardTheme: CardThemeData(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+          textTheme: GoogleFonts.interTextTheme().copyWith(
+            // iOS uses SF Pro, Inter is closest Google Font
+            displayLarge: GoogleFonts.inter(
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.37,
+            ),
+            displayMedium: GoogleFonts.inter(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.36,
+            ),
+            titleLarge: GoogleFonts.inter(
+              fontSize: 22,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.35,
+            ),
+            titleMedium: GoogleFonts.inter(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.41,
+            ),
+            bodyLarge: GoogleFonts.inter(
+              fontSize: 17,
+              fontWeight: FontWeight.w400,
+              letterSpacing: -0.41,
+            ),
+            bodyMedium: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              letterSpacing: -0.24,
+            ),
+            labelLarge: GoogleFonts.inter(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.41,
             ),
           ),
+          appBarTheme: AppBarTheme(
+            centerTitle: false,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.black,
+            titleTextStyle: GoogleFonts.inter(
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+              letterSpacing: 0.37,
+            ),
+          ),
+          cardTheme: CardThemeData(
+            elevation: 0,
+            color: Colors.white,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
           inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: const Color(0xFFF2F2F7),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFF007AFF),
+                width: 2,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 16,
+              vertical: 14,
             ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               elevation: 0,
+              backgroundColor: const Color(0xFF007AFF),
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: const Color(0xFFD1D1D6),
+              disabledForegroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(
                 horizontal: 24,
-                vertical: 16,
+                vertical: 14,
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
+              textStyle: GoogleFonts.inter(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.41,
+              ),
             ),
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF007AFF),
+              textStyle: GoogleFonts.inter(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.41,
+              ),
+            ),
+          ),
+          dividerTheme: const DividerThemeData(
+            color: Color(0xFFD1D1D6),
+            thickness: 0.5,
+            space: 1,
           ),
         ),
         home: const AuthWrapper(),

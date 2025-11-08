@@ -4,6 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/profile_image_service.dart';
+import 'edit_profile_screen.dart';
+import 'borrowing_history_screen.dart';
+import 'notifications_screen.dart';
+import 'help_support_screen.dart';
+import 'favorites_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,8 +19,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileImageService _profileImageService = ProfileImageService();
-  bool _isUploadingImage = false;
-
   bool _isUploadingImage = false;
 
   Future<void> _showImageSourceDialog() async {
@@ -304,7 +307,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               builder: (context, snapshot) {
                 final allBooks = snapshot.data?.docs.length ?? 0;
                 final borrowed = snapshot.data?.docs
-                        .where((doc) => doc['isReturned'] == false)
+                        .where((doc) {
+                          final data = doc.data() as Map<String, dynamic>;
+                          return data['isReturned'] == false;
+                        })
                         .length ??
                     0;
                 final returned = allBooks - borrowed;
@@ -350,8 +356,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Edit Profile',
             subtitle: 'Update your profile information',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditProfileScreen(),
+                ),
               );
             },
           ),
@@ -360,8 +369,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Borrowing History',
             subtitle: 'View your complete history',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BorrowingHistoryScreen(),
+                ),
               );
             },
           ),
@@ -370,8 +382,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Favorites',
             subtitle: 'Your favorite books',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FavoritesScreen(),
+                ),
               );
             },
           ),
@@ -380,8 +395,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Notifications',
             subtitle: 'Manage notification preferences',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
               );
             },
           ),
@@ -390,8 +408,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: 'Help & Support',
             subtitle: 'Get help and support',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HelpSupportScreen(),
+                ),
               );
             },
           ),

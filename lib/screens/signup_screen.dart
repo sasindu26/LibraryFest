@@ -104,11 +104,8 @@ class _SignupScreenState extends State<SignupScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google Sign-Up failed: ${e.toString()}')),
-        );
-      }
+      // Silently handle Google Sign-In errors
+      print('Google Sign-In error (ignored): $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -116,6 +113,33 @@ class _SignupScreenState extends State<SignupScreen> {
         });
       }
     }
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your password';
+    }
+    
+    if (value.length < 8) {
+      return 'Password must be at least 8 characters';
+    }
+    
+    // Check for uppercase letter
+    if (!value.contains(RegExp(r'[A-Z]'))) {
+      return 'Password must contain at least 1 uppercase letter';
+    }
+    
+    // Check for number
+    if (!value.contains(RegExp(r'[0-9]'))) {
+      return 'Password must contain at least 1 number';
+    }
+    
+    // Check for special character
+    if (!value.contains(RegExp(r'[!@#$%^&*]'))) {
+      return 'Password must contain at least 1 special character (!@#\$%^&*)';
+    }
+    
+    return null;
   }
 
   @override
@@ -227,16 +251,10 @@ class _SignupScreenState extends State<SignupScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    helperText: 'Min 8 chars, 1 uppercase, 1 number, 1 special (!@#\$%^&*)',
+                    helperMaxLines: 2,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
+                  validator: _validatePassword,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -308,21 +326,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                OutlinedButton.icon(
+                OutlinedButton(
                   onPressed: _isLoading ? null : _signUpWithGoogle,
-                  icon: Image.network(
-                    'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                    height: 24,
-                    width: 24,
-                  ),
-                  label: Text(
-                    'Continue with Google',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -330,6 +335,37 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     side: BorderSide(color: Colors.grey[300]!),
                     backgroundColor: Colors.white,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/google_logo.png',
+                        height: 24,
+                        width: 24,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 24,
+                            width: 24,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: const Icon(Icons.g_mobiledata, size: 20, color: Colors.blue),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Continue with Google',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),

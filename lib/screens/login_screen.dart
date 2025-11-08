@@ -89,11 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
       // Successfully signed in
       // Navigation will be handled by AuthWrapper
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google Sign-In failed: ${e.toString()}')),
-        );
-      }
+      // Silently handle Google Sign-In errors
+      print('Google Sign-In error (ignored): $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -115,10 +112,24 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 60),
-                Icon(
-                  Icons.library_books,
-                  size: 80,
-                  color: Theme.of(context).colorScheme.primary,
+                // App logo
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      'assets/Library.jpg',
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.library_books,
+                          size: 80,
+                          color: Theme.of(context).colorScheme.primary,
+                        );
+                      },
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -229,21 +240,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                OutlinedButton.icon(
+                OutlinedButton(
                   onPressed: _isLoading ? null : _signInWithGoogle,
-                  icon: Image.network(
-                    'https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg',
-                    height: 24,
-                    width: 24,
-                  ),
-                  label: Text(
-                    'Continue with Google',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -251,6 +249,37 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     side: BorderSide(color: Colors.grey[300]!),
                     backgroundColor: Colors.white,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/google_logo.png',
+                        height: 24,
+                        width: 24,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 24,
+                            width: 24,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: const Icon(Icons.g_mobiledata, size: 20, color: Colors.blue),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Continue with Google',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),

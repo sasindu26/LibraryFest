@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Book {
   final String id;
   final String title;
@@ -8,6 +10,10 @@ class Book {
   final int totalCopies;
   final String? coverUrl;
   final DateTime createdAt;
+  final String category;
+  final double rating;
+  final int publishedYear;
+  final String? fullContent; // Full book text for reading
 
   Book({
     required this.id,
@@ -19,7 +25,14 @@ class Book {
     required this.totalCopies,
     this.coverUrl,
     required this.createdAt,
+    this.category = 'General',
+    this.rating = 4.0,
+    this.publishedYear = 2020,
+    this.fullContent,
   });
+
+  // Helper getter for availability
+  bool get available => availableCopies > 0;
 
   // Convert Book to Map for Firestore
   Map<String, dynamic> toMap() {
@@ -31,12 +44,31 @@ class Book {
       'availableCopies': availableCopies,
       'totalCopies': totalCopies,
       'coverUrl': coverUrl,
+      'category': category,
+      'rating': rating,
+      'publishedYear': publishedYear,
+      'fullContent': fullContent,
       'createdAt': createdAt.toIso8601String(),
     };
   }
 
   // Create Book from Firestore document
   factory Book.fromMap(String id, Map<String, dynamic> map) {
+    DateTime parseCreatedAt() {
+      final createdAtField = map['createdAt'];
+      if (createdAtField == null) return DateTime.now();
+      
+      // Handle Firestore Timestamp
+      if (createdAtField is Timestamp) {
+        return createdAtField.toDate();
+      }
+      // Handle ISO8601 String
+      if (createdAtField is String) {
+        return DateTime.parse(createdAtField);
+      }
+      return DateTime.now();
+    }
+
     return Book(
       id: id,
       title: map['title'] ?? '',
@@ -46,9 +78,11 @@ class Book {
       availableCopies: map['availableCopies'] ?? 0,
       totalCopies: map['totalCopies'] ?? 0,
       coverUrl: map['coverUrl'],
-      createdAt: map['createdAt'] != null
-          ? DateTime.parse(map['createdAt'])
-          : DateTime.now(),
+      category: map['category'] ?? 'General',
+      rating: (map['rating'] ?? 4.0).toDouble(),
+      publishedYear: map['publishedYear'] ?? 2020,
+      fullContent: map['fullContent'],
+      createdAt: parseCreatedAt(),
     );
   }
 
@@ -63,6 +97,10 @@ class Book {
     int? totalCopies,
     String? coverUrl,
     DateTime? createdAt,
+    String? category,
+    double? rating,
+    int? publishedYear,
+    String? fullContent,
   }) {
     return Book(
       id: id ?? this.id,
@@ -74,6 +112,10 @@ class Book {
       totalCopies: totalCopies ?? this.totalCopies,
       coverUrl: coverUrl ?? this.coverUrl,
       createdAt: createdAt ?? this.createdAt,
+      category: category ?? this.category,
+      rating: rating ?? this.rating,
+      publishedYear: publishedYear ?? this.publishedYear,
+      fullContent: fullContent ?? this.fullContent,
     );
   }
 }
@@ -84,10 +126,12 @@ class BorrowedBook {
   final String userId;
   final String bookTitle;
   final String bookAuthor;
+  final String? coverUrl;
   final DateTime borrowedDate;
   final DateTime? returnDate;
   final DateTime dueDate;
   final bool isReturned;
+  final String status; // 'pending', 'approved', 'rejected'
 
   BorrowedBook({
     required this.id,
@@ -95,10 +139,12 @@ class BorrowedBook {
     required this.userId,
     required this.bookTitle,
     required this.bookAuthor,
+    this.coverUrl,
     required this.borrowedDate,
     this.returnDate,
     required this.dueDate,
     required this.isReturned,
+    this.status = 'approved', // default for backward compatibility
   });
 
   Map<String, dynamic> toMap() {
@@ -107,10 +153,12 @@ class BorrowedBook {
       'userId': userId,
       'bookTitle': bookTitle,
       'bookAuthor': bookAuthor,
+      'coverUrl': coverUrl,
       'borrowedDate': borrowedDate.toIso8601String(),
       'returnDate': returnDate?.toIso8601String(),
       'dueDate': dueDate.toIso8601String(),
       'isReturned': isReturned,
+      'status': status,
     };
   }
 
@@ -119,14 +167,16 @@ class BorrowedBook {
       id: id,
       bookId: map['bookId'] ?? '',
       userId: map['userId'] ?? '',
-      bookTitle: map['bookTitle'] ?? '',
-      bookAuthor: map['bookAuthor'] ?? '',
+      bookTitle: map['bookTitle'] ?? 'Unknown Book',
+      bookAuthor: map['bookAuthor'] ?? 'Unknown Author',
+      coverUrl: map['coverUrl'],
       borrowedDate: DateTime.parse(map['borrowedDate']),
       returnDate: map['returnDate'] != null
           ? DateTime.parse(map['returnDate'])
           : null,
       dueDate: DateTime.parse(map['dueDate']),
       isReturned: map['isReturned'] ?? false,
+      status: map['status'] ?? 'approved',
     );
   }
 }

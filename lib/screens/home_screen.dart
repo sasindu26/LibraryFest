@@ -31,13 +31,17 @@ class _HomeScreenState extends State<HomeScreen> {
     // In a real app, check user role from Firestore
     // For demo, checking if email contains 'admin'
     final admin = user?.email?.toLowerCase().contains('admin') ?? false;
-    setState(() {
-      _isAdmin = admin;
+    
+    // Use addPostFrameCallback to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _isAdmin = admin;
+        });
+        final bookProvider = Provider.of<BookProvider>(context, listen: false);
+        bookProvider.setAdminStatus(admin);
+      }
     });
-    if (mounted) {
-      final bookProvider = Provider.of<BookProvider>(context, listen: false);
-      await bookProvider.setAdminStatus(admin);
-    }
   }
 
   @override

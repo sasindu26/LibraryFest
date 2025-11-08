@@ -5,8 +5,15 @@ import 'package:google_fonts/google_fonts.dart';
 import '../providers/book_provider.dart';
 import '../models/book.dart';
 
-class BorrowedScreen extends StatelessWidget {
+class BorrowedScreen extends StatefulWidget {
   const BorrowedScreen({super.key});
+
+  @override
+  State<BorrowedScreen> createState() => _BorrowedScreenState();
+}
+
+class _BorrowedScreenState extends State<BorrowedScreen> {
+  int _refreshKey = 0;
 
   Future<void> _returnBook(BuildContext context, String borrowedBookId, String bookId) async {
     final bookProvider = Provider.of<BookProvider>(context, listen: false);
@@ -32,6 +39,11 @@ class BorrowedScreen extends StatelessWidget {
     if (confirm == true) {
       final success = await bookProvider.returnBook(borrowedBookId, bookId);
       if (context.mounted) {
+        if (success) {
+          setState(() {
+            _refreshKey++;
+          });
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -53,9 +65,9 @@ class BorrowedScreen extends StatelessWidget {
       return const Center(child: Text('Please login to view borrowed books'));
     }
 
-    return FutureBuilder<List<BorrowedBook>>(
-      future: Provider.of<BookProvider>(context, listen: false)
-          .getBorrowedBooks(user.uid),
+    return StreamBuilder<List<BorrowedBook>>(
+      stream: Provider.of<BookProvider>(context, listen: false)
+          .getBorrowedBooksStream(user.uid),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -102,8 +114,10 @@ class BorrowedScreen extends StatelessWidget {
 
         return RefreshIndicator(
           onRefresh: () async {
-            await Provider.of<BookProvider>(context, listen: false)
-                .getBorrowedBooks(user.uid);
+            // StreamBuilder handles real-time updates, but refresh can still work
+            setState(() {
+              _refreshKey++;
+            });
           },
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -113,6 +127,7 @@ class BorrowedScreen extends StatelessWidget {
               final isOverdue =
                   DateTime.now().isAfter(borrowedBook.dueDate) &&
                       !borrowedBook.isReturned;
+              final isPending = borrowedBook.status == 'pending';
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -121,7 +136,9 @@ class BorrowedScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   side: isOverdue
                       ? const BorderSide(color: Colors.red, width: 2)
-                      : BorderSide.none,
+                      : isPending
+                          ? const BorderSide(color: Colors.orange, width: 2)
+                          : BorderSide.none,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -152,7 +169,26 @@ class BorrowedScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          if (isOverdue)
+                          if (isPending)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.orange,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'PENDING APPROVAL',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                          else if (isOverdue)
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -209,28 +245,49 @@ class BorrowedScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => _returnBook(
-                            context,
-                            borrowedBook.id,
-                            borrowedBook.bookId,
-                          ),
-                          style: ElevatedButton.styleFrom(
+                      if (isPending)
+                        SizedBox(
+                          width: double.infinity,
+                          child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
                               borderRadius: BorderRadius.circular(8),
                             ),
+                            child: Center(
+                              child: Text(
+                                'Waiting for Approval',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                            ),
                           ),
-                          child: Text(
-                            'Return Book',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
+                        )
+                      else
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => _returnBook(
+                              context,
+                              borrowedBook.id,
+                              borrowedBook.bookId,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              'Return Book',
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
