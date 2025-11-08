@@ -3,11 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../services/profile_image_service.dart';
 import 'edit_profile_screen.dart';
 import 'borrowing_history_screen.dart';
 import 'notifications_screen.dart';
 import 'help_support_screen.dart';
+import 'login_screen.dart';
 import 'favorites_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -187,8 +189,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
 
-    if (confirmed == true && context.mounted) {
-      await FirebaseAuth.instance.signOut();
+    if (confirmed == true) {
+      try {
+        print('Starting logout process...');
+        
+        // IMPORTANT: Sign out from Google Sign-In first (clears cache)
+        // This works even if user didn't sign in with Google - it just does nothing
+        await GoogleSignIn().signOut();
+        print('Google Sign-In cleared');
+        
+        // Sign out from Firebase (works for all auth methods)
+        await FirebaseAuth.instance.signOut();
+        print('Firebase Auth logout successful');
+        
+        // Force reload to ensure auth state is cleared
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        // Navigate to LoginScreen using root navigator and remove all previous routes
+        if (context.mounted) {
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+            (route) => false,
+          );
+        }
+      } catch (e) {
+        print('Logout error: $e');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error logging out: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 

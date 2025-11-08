@@ -243,9 +243,10 @@ class DashboardScreen extends StatelessWidget {
                               .collection('borrowedBooks')
                               .where('userId', isEqualTo: user?.uid)
                               .where('isReturned', isEqualTo: false)
+                              .where('status', isEqualTo: 'approved')
                               .snapshots(),
                           builder: (context, snapshot) {
-                            // Show loading state immediately with 0 or last known value
+                            // Show loading state immediately with 0
                             if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
                               return _IOSStatCard(
                                 icon: Icons.bookmark_rounded,
@@ -263,12 +264,8 @@ class DashboardScreen extends StatelessWidget {
                                 },
                               );
                             }
-                            // Only count approved books
-                            final approvedBooks = snapshot.data?.docs.where((doc) {
-                              final data = doc.data() as Map<String, dynamic>?;
-                              return data?['status'] == 'approved';
-                            }).toList() ?? [];
-                            final count = approvedBooks.length;
+                            // Count only approved books (already filtered in query)
+                            final count = snapshot.data?.docs.length ?? 0;
                             return _IOSStatCard(
                               icon: Icons.bookmark_rounded,
                               title: 'Borrowed',
@@ -301,6 +298,7 @@ class DashboardScreen extends StatelessWidget {
                               .collection('borrowedBooks')
                               .where('userId', isEqualTo: user?.uid)
                               .where('isReturned', isEqualTo: true)
+                              .where('status', isEqualTo: 'approved') // Only count approved books that were returned
                               .snapshots(),
                           builder: (context, snapshot) {
                             // Show loading state immediately with 0
@@ -345,7 +343,7 @@ class DashboardScreen extends StatelessWidget {
                         child: _IOSStatCard(
                           icon: Icons.category_rounded,
                           title: 'Categories',
-                          value: '${bookProvider.books.map((b) => b.category).toSet().length}',
+                          value: '${bookProvider.books.expand((b) => b.categories).toSet().length}',
                           color: const Color(0xFF5856D6), // iOS Purple
                           gradientColors: const [Color(0xFF5856D6), Color(0xFFAF52DE)],
                           onTap: () {

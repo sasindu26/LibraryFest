@@ -263,7 +263,7 @@ class FavoritesScreen extends StatelessWidget {
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
-                                          book.category,
+                                          book.categories.join(', '),
                                           style: GoogleFonts.inter(
                                             fontSize: 12,
                                             color: const Color(0xFF5856D6),

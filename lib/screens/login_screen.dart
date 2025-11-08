@@ -18,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _googleAuthService = GoogleAuthService();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _showForgotPassword = false; // Show forgot password link after failed login
 
   @override
   void dispose() {
@@ -26,10 +27,71 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> _sendPasswordResetEmail() async {
+    if (_emailController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email address first'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: _emailController.text.trim(),
+      );
+      
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                const Icon(Icons.email_rounded, color: Color(0xFF34C759)),
+                const SizedBox(width: 12),
+                Text('Email Sent!', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: Text(
+              'A password reset link has been sent to ${_emailController.text.trim()}. Please check your email.',
+              style: GoogleFonts.poppins(fontSize: 14),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'An error occurred';
+      if (e.code == 'user-not-found') {
+        errorMessage = 'No user found with this email.';
+      } else if (e.code == 'invalid-email') {
+        errorMessage = 'Invalid email address.';
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
+        _showForgotPassword = false; // Hide forgot password before attempting login
       });
 
       try {
@@ -37,14 +99,23 @@ class _LoginScreenState extends State<LoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
+        // Login successful - forgot password link will stay hidden
       } on FirebaseAuthException catch (e) {
         String errorMessage = 'An error occurred';
         if (e.code == 'user-not-found') {
           errorMessage = 'No user found with this email.';
         } else if (e.code == 'wrong-password') {
           errorMessage = 'Wrong password provided.';
+          setState(() {
+            _showForgotPassword = true; // Show forgot password on wrong password
+          });
         } else if (e.code == 'invalid-email') {
           errorMessage = 'Invalid email address.';
+        } else if (e.code == 'invalid-credential') {
+          errorMessage = 'Invalid email or password.';
+          setState(() {
+            _showForgotPassword = true; // Show forgot password
+          });
         }
         
         if (mounted) {
@@ -203,6 +274,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+                // Forgot Password Link (shown only after failed login)
+                if (_showForgotPassword)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _sendPasswordResetEmail,
+                      child: Text(
+                        'Forgot Password?',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFFFF3B30),
+                        ),
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _login,

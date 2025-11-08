@@ -182,8 +182,26 @@ class BookProvider with ChangeNotifier {
     }
   }
 
-  // Stream version for real-time updates
+  // Stream version for real-time updates - ONLY APPROVED books
   Stream<List<BorrowedBook>> getBorrowedBooksStream(String userId) {
+    return _firestore
+        .collection('borrowedBooks')
+        .where('userId', isEqualTo: userId)
+        .where('isReturned', isEqualTo: false)
+        .where('status', isEqualTo: 'approved') // ONLY approved books
+        .snapshots()
+        .map((snapshot) {
+      final books = snapshot.docs
+          .map((doc) => BorrowedBook.fromMap(doc.id, doc.data()))
+          .toList();
+      
+      books.sort((a, b) => b.borrowedDate.compareTo(a.borrowedDate));
+      return books;
+    });
+  }
+
+  // Stream for ALL borrowed books including pending (for admin or full view)
+  Stream<List<BorrowedBook>> getAllBorrowedBooksStream(String userId) {
     return _firestore
         .collection('borrowedBooks')
         .where('userId', isEqualTo: userId)
@@ -192,7 +210,6 @@ class BookProvider with ChangeNotifier {
         .map((snapshot) {
       final books = snapshot.docs
           .map((doc) => BorrowedBook.fromMap(doc.id, doc.data()))
-          .where((book) => book.status == 'approved' || book.status == 'pending')
           .toList();
       
       books.sort((a, b) => b.borrowedDate.compareTo(a.borrowedDate));

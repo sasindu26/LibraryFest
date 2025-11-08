@@ -47,6 +47,7 @@ class CurrentBorrowedScreen extends StatelessWidget {
                 .collection('borrowedBooks')
                 .where('userId', isEqualTo: user?.uid)
                 .where('isReturned', isEqualTo: false)
+                .where('status', isEqualTo: 'approved') // ONLY approved books
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
@@ -233,6 +234,8 @@ class _BorrowedBookCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isOverdue = dueDate != null && dueDate!.isBefore(DateTime.now());
     final daysUntilDue = dueDate != null ? dueDate!.difference(DateTime.now()).inDays : 0;
+    final status = data['status'] ?? 'approved'; // Get actual status
+    final isPending = status == 'pending';
 
     return FutureBuilder<DocumentSnapshot>(
       future: FirebaseFirestore.instance
@@ -425,19 +428,23 @@ class _BorrowedBookCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isOverdue
-                        ? const Color(0xFFFF3B30).withOpacity(0.1)
-                        : const Color(0xFFFF9500).withOpacity(0.1),
+                    color: isPending
+                        ? const Color(0xFFFF9500).withOpacity(0.1)
+                        : isOverdue
+                            ? const Color(0xFFFF3B30).withOpacity(0.1)
+                            : const Color(0xFF34C759).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    isOverdue ? 'Overdue' : 'Active',
+                    isPending ? 'Pending' : (isOverdue ? 'Overdue' : 'Borrowed'),
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isOverdue
-                          ? const Color(0xFFFF3B30)
-                          : const Color(0xFFFF9500),
+                      color: isPending
+                          ? const Color(0xFFFF9500)
+                          : isOverdue
+                              ? const Color(0xFFFF3B30)
+                              : const Color(0xFF34C759),
                       letterSpacing: -0.08,
                     ),
                   ),

@@ -381,25 +381,31 @@ class _IOSHistoryCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: status == 'rejected'
                         ? const Color(0xFFFF3B30).withOpacity(0.1)
-                        : isReturned
-                            ? const Color(0xFF34C759).withOpacity(0.1)
-                            : const Color(0xFF007AFF).withOpacity(0.1),
+                        : status == 'pending'
+                            ? const Color(0xFFFF9500).withOpacity(0.1)
+                            : isReturned
+                                ? const Color(0xFF34C759).withOpacity(0.1)
+                                : const Color(0xFF007AFF).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     status == 'rejected'
                         ? 'Rejected'
-                        : isReturned
-                            ? 'Returned'
-                            : 'Borrowed',
+                        : status == 'pending'
+                            ? 'Pending'
+                            : isReturned
+                                ? 'Returned'
+                                : 'Borrowed',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: status == 'rejected'
                           ? const Color(0xFFFF3B30)
-                          : isReturned
-                              ? const Color(0xFF34C759)
-                              : const Color(0xFF007AFF),
+                          : status == 'pending'
+                              ? const Color(0xFFFF9500)
+                              : isReturned
+                                  ? const Color(0xFF34C759)
+                                  : const Color(0xFF007AFF),
                       letterSpacing: -0.08,
                     ),
                   ),

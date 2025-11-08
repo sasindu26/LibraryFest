@@ -592,21 +592,27 @@ class _IOSBookCardState extends State<_IOSBookCard> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF5856D6).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          widget.book.category,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: const Color(0xFF5856D6),
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.08,
-                          ),
-                        ),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: widget.book.categories.map((category) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF5856D6).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              category,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: const Color(0xFF5856D6),
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.08,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                       const SizedBox(height: 8),
                       Row(

@@ -10,7 +10,7 @@ class Book {
   final int totalCopies;
   final String? coverUrl;
   final DateTime createdAt;
-  final String category;
+  final List<String> categories; // Changed from single category to list
   final double rating;
   final int publishedYear;
   final String? fullContent; // Full book text for reading
@@ -25,11 +25,11 @@ class Book {
     required this.totalCopies,
     this.coverUrl,
     required this.createdAt,
-    this.category = 'General',
+    List<String>? categories,
     this.rating = 4.0,
     this.publishedYear = 2020,
     this.fullContent,
-  });
+  }) : categories = categories ?? ['General'];
 
   // Helper getter for availability
   bool get available => availableCopies > 0;
@@ -44,7 +44,7 @@ class Book {
       'availableCopies': availableCopies,
       'totalCopies': totalCopies,
       'coverUrl': coverUrl,
-      'category': category,
+      'categories': categories, // Store as array
       'rating': rating,
       'publishedYear': publishedYear,
       'fullContent': fullContent,
@@ -69,6 +69,21 @@ class Book {
       return DateTime.now();
     }
 
+    // Parse categories - handle both old single category and new multiple categories
+    List<String> parseCategories() {
+      // Check for new format (array)
+      if (map['categories'] != null && map['categories'] is List) {
+        return List<String>.from(map['categories']);
+      }
+      // Check for old format (single string)
+      if (map['category'] != null && map['category'] is String) {
+        final category = map['category'] as String;
+        // Split comma-separated categories
+        return category.split(',').map((c) => c.trim()).where((c) => c.isNotEmpty).toList();
+      }
+      return ['General'];
+    }
+
     return Book(
       id: id,
       title: map['title'] ?? '',
@@ -78,7 +93,7 @@ class Book {
       availableCopies: map['availableCopies'] ?? 0,
       totalCopies: map['totalCopies'] ?? 0,
       coverUrl: map['coverUrl'],
-      category: map['category'] ?? 'General',
+      categories: parseCategories(),
       rating: (map['rating'] ?? 4.0).toDouble(),
       publishedYear: map['publishedYear'] ?? 2020,
       fullContent: map['fullContent'],
@@ -97,7 +112,7 @@ class Book {
     int? totalCopies,
     String? coverUrl,
     DateTime? createdAt,
-    String? category,
+    List<String>? categories,
     double? rating,
     int? publishedYear,
     String? fullContent,
@@ -112,7 +127,7 @@ class Book {
       totalCopies: totalCopies ?? this.totalCopies,
       coverUrl: coverUrl ?? this.coverUrl,
       createdAt: createdAt ?? this.createdAt,
-      category: category ?? this.category,
+      categories: categories ?? this.categories,
       rating: rating ?? this.rating,
       publishedYear: publishedYear ?? this.publishedYear,
       fullContent: fullContent ?? this.fullContent,

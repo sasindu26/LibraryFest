@@ -125,7 +125,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 child: _StatCard(
                   icon: Icons.category,
                   title: 'Categories',
-                  value: '${bookProvider.books.map((b) => b.category).toSet().length}',
+                  value: '${bookProvider.books.expand((b) => b.categories).toSet().length}',
                   color: Colors.purple,
                 ),
               ),
@@ -785,7 +785,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
           'author': _authorController.text.trim(),
           'isbn': _isbnController.text.trim(),
           'description': _descriptionController.text.trim(),
-          'category': _categoryController.text.trim(),
+          'categories': _categoryController.text.trim().split(',').map((c) => c.trim()).where((c) => c.isNotEmpty).toList(),
           'availableCopies': 3, // Default number of copies
           'totalCopies': 3,
           'coverUrl': coverUrl, // Add the cover URL
@@ -962,16 +962,18 @@ class _AddBookScreenState extends State<AddBookScreen> {
               TextFormField(
                 controller: _categoryController,
                 decoration: InputDecoration(
-                  labelText: 'Category *',
+                  labelText: 'Categories *',
                   prefixIcon: const Icon(Icons.category),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  hintText: 'e.g., Fiction, Science, History',
+                  hintText: 'e.g., Fiction, Science, History (comma-separated)',
+                  helperText: 'Separate multiple categories with commas',
+                  helperMaxLines: 2,
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter category';
+                    return 'Please enter at least one category';
                   }
                   return null;
                 },
@@ -1076,7 +1078,7 @@ class ManageBooksScreen extends StatelessWidget {
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                     ),
                     subtitle: Text(
-                      '${book.author} • ${book.category}',
+                      '${book.author} • ${book.categories.join(', ')}',
                       style: GoogleFonts.poppins(fontSize: 12),
                     ),
                     trailing: PopupMenuButton(
@@ -1196,7 +1198,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
     _authorController = TextEditingController(text: widget.book.author);
     _isbnController = TextEditingController(text: widget.book.isbn);
     _descriptionController = TextEditingController(text: widget.book.description);
-    _categoryController = TextEditingController(text: widget.book.category);
+    _categoryController = TextEditingController(text: widget.book.categories.join(', '));
   }
 
   @override
@@ -1221,7 +1223,7 @@ class _EditBookScreenState extends State<EditBookScreen> {
           'author': _authorController.text.trim(),
           'isbn': _isbnController.text.trim(),
           'description': _descriptionController.text.trim(),
-          'category': _categoryController.text.trim(),
+          'categories': _categoryController.text.trim().split(',').map((c) => c.trim()).where((c) => c.isNotEmpty).toList(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
@@ -1305,12 +1307,15 @@ class _EditBookScreenState extends State<EditBookScreen> {
               TextFormField(
                 controller: _categoryController,
                 decoration: InputDecoration(
-                  labelText: 'Category *',
+                  labelText: 'Categories *',
                   prefixIcon: const Icon(Icons.category),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  hintText: 'e.g., Fiction, Science, History (comma-separated)',
+                  helperText: 'Separate multiple categories with commas',
+                  helperMaxLines: 2,
                 ),
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Please enter category' : null,
+                    value == null || value.isEmpty ? 'Please enter at least one category' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(

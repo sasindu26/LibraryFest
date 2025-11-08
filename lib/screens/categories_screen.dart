@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/book_provider.dart';
 import '../models/book.dart';
+import 'book_details_screen.dart';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
@@ -11,12 +12,12 @@ class CategoriesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bookProvider = Provider.of<BookProvider>(context);
     
-    // Get unique categories
-    final categories = bookProvider.books
-        .map((book) => book.category)
-        .toSet()
-        .toList()
-      ..sort();
+    // Get unique categories from all books (flatten all category lists)
+    final Set<String> categorySet = {};
+    for (var book in bookProvider.books) {
+      categorySet.addAll(book.categories);
+    }
+    final categories = categorySet.toList()..sort();
 
     return Scaffold(
       appBar: AppBar(
@@ -51,8 +52,9 @@ class CategoriesScreen extends StatelessWidget {
               itemCount: categories.length,
               itemBuilder: (context, index) {
                 final category = categories[index];
+                // Get books that have this category in their categories list
                 final booksInCategory = bookProvider.books
-                    .where((book) => book.category == category)
+                    .where((book) => book.categories.contains(category))
                     .toList();
 
                 return _CategoryCard(
@@ -249,10 +251,19 @@ class _CategoryBooksScreen extends StatelessWidget {
           final book = books[index];
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
-            child: ListTile(
-              leading: Container(
-                width: 50,
-                height: 70,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookDetailsScreen(book: book),
+                  ),
+                );
+              },
+              child: ListTile(
+                leading: Container(
+                  width: 50,
+                  height: 70,
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -322,6 +333,7 @@ class _CategoryBooksScreen extends StatelessWidget {
                 ],
               ),
               isThreeLine: true,
+            ),
             ),
           );
         },

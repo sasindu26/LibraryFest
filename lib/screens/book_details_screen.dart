@@ -220,21 +220,45 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
     if (confirm == true) {
       final success = await bookProvider.borrowBook(widget.book.id, user.uid);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success ? 'Borrow request submitted! Waiting for admin approval.' : 'Failed to submit request',
-              style: GoogleFonts.inter(),
-            ),
-            backgroundColor: success ? const Color(0xFFFF9500) : const Color(0xFFFF3B30),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-        
-        // Refresh the borrowed status
+        // Show dialog for success
         if (success) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Color(0xFF34C759), size: 28),
+                  const SizedBox(width: 12),
+                  Text('Request Submitted!', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18)),
+                ],
+              ),
+              content: Text(
+                'Your borrow request has been submitted and is waiting for the library officer\'s approval. You\'ll be notified once it\'s approved.',
+                style: GoogleFonts.inter(fontSize: 15, height: 1.5),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('OK', style: GoogleFonts.inter(color: const Color(0xFF007AFF), fontWeight: FontWeight.w600, fontSize: 16)),
+                ),
+              ],
+            ),
+          );
           _checkIfAlreadyBorrowed();
+        } else {
+          // Show error snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Failed to submit request. Please try again.',
+                style: GoogleFonts.inter(),
+              ),
+              backgroundColor: const Color(0xFFFF3B30),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
         }
       }
     }
@@ -410,22 +434,31 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Category & Availability Row
+                  // Categories & Availability Row
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF5856D6).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          widget.book.category,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: const Color(0xFF5856D6),
-                            fontWeight: FontWeight.w600,
-                          ),
+                      // Show all categories as chips
+                      Expanded(
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: widget.book.categories.map((category) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF5856D6).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                category,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: const Color(0xFF5856D6),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -517,7 +550,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                         const Divider(height: 24),
                         _buildInfoRow('Author', widget.book.author),
                         const Divider(height: 24),
-                        _buildInfoRow('Category', widget.book.category),
+                        _buildInfoRow('Categories', widget.book.categories.join(', ')),
                         const Divider(height: 24),
                         _buildInfoRow('Rating', '${widget.book.rating} / 5.0'),
                         const Divider(height: 24),
