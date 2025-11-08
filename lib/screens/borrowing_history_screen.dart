@@ -146,6 +146,8 @@ class BorrowingHistoryScreen extends StatelessWidget {
                       }
                       
                       final isReturned = data['isReturned'] ?? false;
+                      final status = data['status'] ?? 'approved'; // pending, approved, rejected
+                      final coverUrl = data['coverUrl'] ?? '';
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -155,6 +157,8 @@ class BorrowingHistoryScreen extends StatelessWidget {
                           dueDate: dueDate,
                           returnedDate: returnedDate,
                           isReturned: isReturned,
+                          status: status,
+                          coverUrl: coverUrl,
                         ),
                       );
                     },
@@ -176,6 +180,8 @@ class _IOSHistoryCard extends StatelessWidget {
   final DateTime? dueDate;
   final DateTime? returnedDate;
   final bool isReturned;
+  final String status;
+  final String coverUrl;
 
   const _IOSHistoryCard({
     required this.data,
@@ -183,6 +189,8 @@ class _IOSHistoryCard extends StatelessWidget {
     required this.dueDate,
     required this.returnedDate,
     required this.isReturned,
+    required this.status,
+    required this.coverUrl,
   });
 
   @override
@@ -215,33 +223,82 @@ class _IOSHistoryCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Book Icon
+                // Book Cover Image
                 Container(
                   width: 60,
                   height: 80,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isReturned
-                          ? [const Color(0xFF34C759), const Color(0xFF30D158)]
-                          : [const Color(0xFF007AFF), const Color(0xFF5AC8FA)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: (isReturned 
-                            ? const Color(0xFF34C759) 
-                            : const Color(0xFF007AFF)).withOpacity(0.3),
+                        color: Colors.black.withOpacity(0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: Icon(
-                    isReturned ? Icons.check_circle_rounded : Icons.bookmark_rounded,
-                    color: Colors.white,
-                    size: 32,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: coverUrl.isNotEmpty
+                        ? Image.network(
+                            coverUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: status == 'rejected'
+                                        ? [const Color(0xFFFF3B30), const Color(0xFFFF6482)]
+                                        : isReturned
+                                            ? [const Color(0xFF34C759), const Color(0xFF30D158)]
+                                            : [const Color(0xFF007AFF), const Color(0xFF5AC8FA)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                ),
+                                child: Icon(
+                                  status == 'rejected'
+                                      ? Icons.cancel_rounded
+                                      : isReturned
+                                          ? Icons.check_circle_rounded
+                                          : Icons.bookmark_rounded,
+                                  color: Colors.white,
+                                  size: 32,
+                                ),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                color: Colors.grey[200],
+                                child: const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: status == 'rejected'
+                                    ? [const Color(0xFFFF3B30), const Color(0xFFFF6482)]
+                                    : isReturned
+                                        ? [const Color(0xFF34C759), const Color(0xFF30D158)]
+                                        : [const Color(0xFF007AFF), const Color(0xFF5AC8FA)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: Icon(
+                              status == 'rejected'
+                                  ? Icons.cancel_rounded
+                                  : isReturned
+                                      ? Icons.check_circle_rounded
+                                      : Icons.bookmark_rounded,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -322,19 +379,27 @@ class _IOSHistoryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isReturned
-                        ? const Color(0xFF34C759).withOpacity(0.1)
-                        : const Color(0xFF007AFF).withOpacity(0.1),
+                    color: status == 'rejected'
+                        ? const Color(0xFFFF3B30).withOpacity(0.1)
+                        : isReturned
+                            ? const Color(0xFF34C759).withOpacity(0.1)
+                            : const Color(0xFF007AFF).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    isReturned ? 'Returned' : 'Borrowed',
+                    status == 'rejected'
+                        ? 'Rejected'
+                        : isReturned
+                            ? 'Returned'
+                            : 'Borrowed',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isReturned 
-                          ? const Color(0xFF34C759) 
-                          : const Color(0xFF007AFF),
+                      color: status == 'rejected'
+                          ? const Color(0xFFFF3B30)
+                          : isReturned
+                              ? const Color(0xFF34C759)
+                              : const Color(0xFF007AFF),
                       letterSpacing: -0.08,
                     ),
                   ),

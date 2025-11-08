@@ -128,7 +128,9 @@ class DashboardScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                user?.displayName ?? 'Reader',
+                                user?.email?.toLowerCase().contains('admin') ?? false
+                                    ? 'Admin'
+                                    : user?.displayName ?? 'Reader',
                                 style: GoogleFonts.inter(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -243,6 +245,24 @@ class DashboardScreen extends StatelessWidget {
                               .where('isReturned', isEqualTo: false)
                               .snapshots(),
                           builder: (context, snapshot) {
+                            // Show loading state immediately with 0 or last known value
+                            if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                              return _IOSStatCard(
+                                icon: Icons.bookmark_rounded,
+                                title: 'Borrowed',
+                                value: '0',
+                                color: const Color(0xFFFF9500),
+                                gradientColors: const [Color(0xFFFF9500), Color(0xFFFF6482)],
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const CurrentBorrowedScreen(),
+                                    ),
+                                  );
+                                },
+                              );
+                            }
                             // Only count approved books
                             final approvedBooks = snapshot.data?.docs.where((doc) {
                               final data = doc.data() as Map<String, dynamic>?;
@@ -283,6 +303,24 @@ class DashboardScreen extends StatelessWidget {
                               .where('isReturned', isEqualTo: true)
                               .snapshots(),
                           builder: (context, snapshot) {
+                            // Show loading state immediately with 0
+                            if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                              return _IOSStatCard(
+                                icon: Icons.check_circle_rounded,
+                                title: 'Returned',
+                                value: '0',
+                                color: const Color(0xFF34C759),
+                                gradientColors: const [Color(0xFF34C759), Color(0xFF30D158)],
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const BorrowingHistoryScreen(),
+                                    ),
+                                  );
+                                },
+                              );
+                            }
                             final count = snapshot.data?.docs.length ?? 0;
                             return _IOSStatCard(
                               icon: Icons.check_circle_rounded,

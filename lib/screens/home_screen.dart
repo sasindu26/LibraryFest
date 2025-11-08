@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = FirebaseAuth.instance.currentUser;
     
     final List<String> titles = [
-      'Dashboard',
+      'Home',
       'Catalog',
       'My Books',
       if (_isAdmin) 'Admin',
@@ -104,8 +104,8 @@ class _HomeScreenState extends State<HomeScreen> {
         unselectedLabelStyle: GoogleFonts.poppins(fontSize: 11),
         items: [
           const BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+            icon: Icon(Icons.home_rounded),
+            label: 'Home',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.library_books),
